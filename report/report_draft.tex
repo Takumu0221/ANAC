@@ -2,34 +2,46 @@
 \documentclass[uplatex, 10pt, a4j]{jsarticle}
 \usepackage{authblk}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+\usepackage[top=20truemm,bottom=20truemm,left=15truemm,right=15truemm]{geometry}
+\usepackage{enumerate}
 
 \begin{document}
 % 本文
 \title{Gentle}
 \author{Takumu Shimizu}
 \affil{Tokyo University of Agriculture and Technology}
-\date{}
+\date{\vspace{-15mm}}
+
 \maketitle
 
-\section{Negotiation management}
-このエージェントは，それぞれの相手に対して独立して交渉を行う．
-\subsection{offering strategy}
-このエージェントは，いくつかの指標をもとにofferの価格（$p^{offer}$）および取引量（$q^{offer}$）を決定する．特にutility functionは設定していない．
+\section{\textrm{Negotiation Management}}
+Gentleは，サンプルコードの一つであるAdaptive Aegntを継承しており，それぞれの相手に対して独立に交渉を行う．
+また，交渉の選択は継承元のクラスと同一であり，自分のneed（$q^{need}$）が満たされるまで全ての相手との交渉を継続する．$q^{need}$は外的取引量からその日の合意した取引量を引いたものである．
+特にutility functionは設定しておらず，主に価格を重視して判断する．
+
+\subsection{\textrm{Offering Strategy}}
+Gentleは，いくつかの指標をもとにofferの価格（$p^{offer}$）および取引量（$q^{offer}$）を決定する．
+その際，これらの記号 $\trianglerighteq, \vartriangleleft$ を，エージェントにとって良いか悪いかを表す大小関係として定義する．
+この時，売り手エージェントであれば $5\vartriangleleft 10$は真であり，買い手エージェントであれば $5 \trianglerighteq 10$も真となる．
 \begin{equation*}
     \begin{split}
         % offer price
         p^{offer}&=\left\{\begin{array}{ll}
-            \frac{p^{max}+p^{min}}{2} \times \left(1+b^{is\_selling}\times s_{offer}\right) & \mathrm{if} \; n^{contract}_{accept}+n^{contract}_{offer}=0                                  \\ [3mm]
-            p^{worst\_contract}                                                             & \mathrm{if} \; n^{contract}_{accept} \leq 1 \; \mathrm{and} \; p^{worst\_contract} \geq \tau \\ [1mm]
-                                                                                            & \mathrm{or} \; n^{contract}_{accept}<1 \; \mathrm{and} \; n^{contract}_{offer} \geq 1        \\ [3mm]
-            p^{worst\_contract} \times \left(1 + b^{is\_selling} \times 0.1\right)          & \mathrm{if} \; n^{contract}_{accept} \geq 1 \; \mathrm{and} \; p^{worst\_contract} < \tau    \\
+            \dfrac{p^{max}+p^{min}}{2} \times \left(1+b^{is\_selling}\times s_{offer}\right) & \mathrm{if} \; n^{contract}_{accept}+n^{contract}_{offer}=0                                               \\ [3mm]
+            p^{worst\_contract}                                                              & \mathrm{if} \; n^{contract}_{accept} \geq 1 \; \mathrm{and} \; p^{worst\_contract} \trianglerighteq  \tau \\ [1mm]
+                                                                                             & \mathrm{or} \; n^{contract}_{accept}<1 \; \mathrm{and} \; n^{contract}_{offer} \geq 1                     \\ [3mm]
+            p^{worst\_contract} \times \left(1 + b^{is\_selling} \times 0.1\right)           & \mathrm{if} \; n^{contract}_{accept} \geq 1 \; \mathrm{and} \; p^{worst\_contract} \vartriangleleft \tau  \\
         \end{array}\right. \\
+        q^{offer} &= q^{need} \\
         % その他変数の説明
         b^{is\_selling}&=\left\{\begin{array}{ll}
             1  & \mathrm{if \; selling} \\
-            -1 & \mathrm{if \; buying}
+            -1 & \mathrm{if \; buying}  \\
         \end{array}\right. \\
-        s_{offer} &= 0.2-0.5 \times \min{\left(\frac{t}{0.3}, 1\right)} \\
+        s_{offer} &= 0.2-0.5 \times \min{\left(\dfrac{t^{nego}}{0.3}, 1\right)} \\
         \tau &= \left\{\begin{array}{ll}
             p^{max} - 19^{-0.2} \times \left(p^{max} - p^{min}\right) & \mathrm{if \; selling} \\
             p^{min} + 19^{-0.2} \times \left(p^{max} - p^{min}\right) & \mathrm{if \; buying}  \\
@@ -39,37 +51,66 @@
 \begin{equation*}
     \begin{split}
         p^{max} \; / \; p^{min} &: \; \text{その交渉でのunit priceの最大値および最小値} \\
-        p^{worst\_contract} &: \; \text{交渉相手との合意価格のなかで最も自分にとって悪いもの} \\
+        p^{worst\_contract} &: \; \text{交渉相手との合意価格のなかで自分にとって最も悪いもの} \\
         n^{contract}_{offer} \; / \; n^{contract}_{accept} &: \; \text{自分のoffer/acceptによる交渉相手との合意の数} \\
-        i \; / \; j \; / \; t &: \; \text{simulation step/negotiation step/negotiation time} \\
+        i \; / \; j \; / \; t^{nego} &: \; \text{simulation step/negotiation step/negotiation time} \\
     \end{split}
 \end{equation*}
 
-\subsection{acceptance strategy}
-このエージェントは，いくつかの指標をもとに受け入れるunit price（$p^accept$）を決定する．
+\subsection{\textrm{Acceptance Strategy}}
+Gentleは，いくつかの指標をもとに受け入れるunit price（$p^{accept}$）を決定する．取引量については考慮しない．
 \begin{equation*}
     \begin{split}
         % accept price
         p^{accept} &= \left\{\begin{array}{ll}
-            \max \left(p^{best\_selling}_{i}, p^{best_contract} \times \left(1+s_{accept}\right) \right) & \mathrm{if \; selling} \\ [3mm]
-            \min \left(p^{best\_buying}_{i}, p^{best_contract} \times \left(1-s_{accept}\right) \right)  & \mathrm{if \; buying}  \\
+            \max \left(p^{best\_selling}_{i}, p^{best\_contract} \times \left(1+s_{accept}\right) \right) & \mathrm{if \; selling} \\ [3mm]
+            \min \left(p^{best\_buying}_{i}, p^{best\_contract} \times \left(1-s_{accept}\right) \right)  & \mathrm{if \; buying}  \\
         \end{array}\right. \\
+        % その他変数の説明
         s_{accept} &= \left\{\begin{array}{ll}
             0.2 & \mathrm{if} \; r \geq 3 \\
             0   & \mathrm{if} \; r < 3    \\
         \end{array}\right. \\
-        r &= \frac{p^{opp\_offer}_{j} - p^{opp\_offer}_{j-1}}{p^{opp\_offer}_{j-1} - p^{opp\_offer}_{j-2}} \\
+        r &= \dfrac{p^{opp\_offer}_{i,j} - p^{opp\_offer}_{i,j-1}}{p^{opp\_offer}_{i,j-1} - p^{opp\_offer}_{i,j-2}} \\
+        p^{best\_selling}_{i} &= \max\left(p^{opp\_offer}_{i,0}, p^{opp\_offer}_{i,1}, \dots, p^{opp\_offer}_{i,j}\right) \\
+        p^{best\_buying}_{i} &= \min\left(p^{opp\_offer}_{i,0}, p^{opp\_offer}_{i,1}, \dots, p^{opp\_offer}_{i,j}\right) \\
     \end{split}
 \end{equation*}
 \begin{equation*}
     \begin{split}
-        p^{best\_contract} &: \; \text{交渉相手との合意価格の中で最も自分にとって良いもの} \\
+        p^{best\_contract} &: \; \text{交渉相手との合意価格の中で自分にとって最も良いもの} \\
+        p^{opp\_offer}_{i,j} &: \; \text{i日目jステップ目の相手のoffer価格}
     \end{split}
 \end{equation*}
 
-\section{Simultaneous negotiations coordination:}
+\section{\textrm{Risk Management}}
+全く合意できないというリスクを対処するため，GentleはSelf factor（$S$）をもとに譲歩したOfferを提案する．具体的には，次のような条件下で譲歩する．
+\begin{enumerate}[\hspace{20mm}1\textrm{:}]
+    \item \hspace{10mm} if $t^{sim}>0.3$ and $S<0.5$:
+    \item \hspace{10mm} \qquad $s^{offer} = s^{offer} - 1$
+\end{enumerate}
+Self factorは，自身の交渉の進捗を表す指標であり，次のように求められる．
+\begin{equation*}
+    \begin{split}
+        S &= \dfrac{2}{3}AR + \dfrac{1}{3}AP \\
+        AR &= \left\{\begin{array}{ll}
+            \dfrac{\text{number of success simulation steps}}{i} & \text{if Gentle has one or more agreements} \\
+            1                                                    & \text{if Gentle has no agreement}           \\
+        \end{array}\right. \\
+        AP &= \left\{\begin{array}{ll}
+            0.5 - b^{is\_selling} \times \dfrac{p^{prev\_contract}-TP}{TP} & \text{if Gentle has one or more agreements} \\
+            0.5                                                            & \text{if Gentle has no agreement}           \\
+        \end{array}\right. \\
+    \end{split}
+\end{equation*}
+\begin{equation*}
+    \begin{split}
+        % AR &: \text{交渉開始から現在までの交渉成功割合} \\
+        % AP &: \text{合意価格が良いかどうか} \\
+        p^{prev\_contract} &: \text{直近の合意価格} \\
+        TP &: \text{trading price} \\
+    \end{split}
+\end{equation*}
 
-\section{Risk management}
-
-\section{Evaluation}
+\section{\textrm{Evaluation}}
 \end{document}
