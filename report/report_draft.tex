@@ -1,0 +1,75 @@
+% sample.tex
+\documentclass[uplatex, 10pt, a4j]{jsarticle}
+\usepackage{authblk}
+\usepackage{amsmath}
+
+\begin{document}
+% 本文
+\title{Gentle}
+\author{Takumu Shimizu}
+\affil{Tokyo University of Agriculture and Technology}
+\date{}
+\maketitle
+
+\section{Negotiation management}
+このエージェントは，それぞれの相手に対して独立して交渉を行う．
+\subsection{offering strategy}
+このエージェントは，いくつかの指標をもとにofferの価格（$p^{offer}$）および取引量（$q^{offer}$）を決定する．特にutility functionは設定していない．
+\begin{equation*}
+    \begin{split}
+        % offer price
+        p^{offer}&=\left\{\begin{array}{ll}
+            \frac{p^{max}+p^{min}}{2} \times \left(1+b^{is\_selling}\times s_{offer}\right) & \mathrm{if} \; n^{contract}_{accept}+n^{contract}_{offer}=0                                  \\ [3mm]
+            p^{worst\_contract}                                                             & \mathrm{if} \; n^{contract}_{accept} \leq 1 \; \mathrm{and} \; p^{worst\_contract} \geq \tau \\ [1mm]
+                                                                                            & \mathrm{or} \; n^{contract}_{accept}<1 \; \mathrm{and} \; n^{contract}_{offer} \geq 1        \\ [3mm]
+            p^{worst\_contract} \times \left(1 + b^{is\_selling} \times 0.1\right)          & \mathrm{if} \; n^{contract}_{accept} \geq 1 \; \mathrm{and} \; p^{worst\_contract} < \tau    \\
+        \end{array}\right. \\
+        % その他変数の説明
+        b^{is\_selling}&=\left\{\begin{array}{ll}
+            1  & \mathrm{if \; selling} \\
+            -1 & \mathrm{if \; buying}
+        \end{array}\right. \\
+        s_{offer} &= 0.2-0.5 \times \min{\left(\frac{t}{0.3}, 1\right)} \\
+        \tau &= \left\{\begin{array}{ll}
+            p^{max} - 19^{-0.2} \times \left(p^{max} - p^{min}\right) & \mathrm{if \; selling} \\
+            p^{min} + 19^{-0.2} \times \left(p^{max} - p^{min}\right) & \mathrm{if \; buying}  \\
+        \end{array}\right. \\
+    \end{split}
+\end{equation*}
+\begin{equation*}
+    \begin{split}
+        p^{max} \; / \; p^{min} &: \; \text{その交渉でのunit priceの最大値および最小値} \\
+        p^{worst\_contract} &: \; \text{交渉相手との合意価格のなかで最も自分にとって悪いもの} \\
+        n^{contract}_{offer} \; / \; n^{contract}_{accept} &: \; \text{自分のoffer/acceptによる交渉相手との合意の数} \\
+        i \; / \; j \; / \; t &: \; \text{simulation step/negotiation step/negotiation time} \\
+    \end{split}
+\end{equation*}
+
+\subsection{acceptance strategy}
+このエージェントは，いくつかの指標をもとに受け入れるunit price（$p^accept$）を決定する．
+\begin{equation*}
+    \begin{split}
+        % accept price
+        p^{accept} &= \left\{\begin{array}{ll}
+            \max \left(p^{best\_selling}_{i}, p^{best_contract} \times \left(1+s_{accept}\right) \right) & \mathrm{if \; selling} \\ [3mm]
+            \min \left(p^{best\_buying}_{i}, p^{best_contract} \times \left(1-s_{accept}\right) \right)  & \mathrm{if \; buying}  \\
+        \end{array}\right. \\
+        s_{accept} &= \left\{\begin{array}{ll}
+            0.2 & \mathrm{if} \; r \geq 3 \\
+            0   & \mathrm{if} \; r < 3    \\
+        \end{array}\right. \\
+        r &= \frac{p^{opp\_offer}_{j} - p^{opp\_offer}_{j-1}}{p^{opp\_offer}_{j-1} - p^{opp\_offer}_{j-2}} \\
+    \end{split}
+\end{equation*}
+\begin{equation*}
+    \begin{split}
+        p^{best\_contract} &: \; \text{交渉相手との合意価格の中で最も自分にとって良いもの} \\
+    \end{split}
+\end{equation*}
+
+\section{Simultaneous negotiations coordination:}
+
+\section{Risk management}
+
+\section{Evaluation}
+\end{document}
