@@ -19,29 +19,30 @@
 \maketitle
 
 \section{\textrm{Negotiation Management}}
-Gentleは，サンプルコードの一つである \textit{AdaptiveAegnt} を継承しており，それぞれの相手に対して独立に交渉を行う．
-また，交渉の選択は継承元のクラスと同一であり，自分の需要（$q^{need}$）が満たされるまで全ての相手との交渉を継続する．$q^{need}$は外的取引量からその日の合意した取引量を引いたものである．
-特にutility functionは設定しておらず，主に価格を重視して判断する．判断の基準となる取引データを次に示す．
+Gentle inherits \textit{AdaptiveAgent} and deals with opponents independently. 
+Negotiation choices are the same way of the class, that is, Gentle continues to deal with all opponents until its needs $q^{need}$ are fulfilled.
+$q^{need}$ is the quantity of exogenous contracts minus that of agreements for the day.
+We don't set utility function and the decision of Gentle is mainly based on the unit price.
+The following shows the trading information used as the basis for the decision.
 \begin{equation*}
     \begin{split}
         i&:\text{simulation step}, \; j:\text{negotiation step}, \; t^{nego}:\text{negotiation time} \\
-        n^{contract}_{offer}&:\text{自分のofferによる合意の数}, \; n^{contract}_{accept}: \; \text{自分のacceptによる合意の数} \\
-        p^{max}&:\text{その交渉におけるunit priceの最大値}, \; p^{min}:\text{その交渉におけるunit priceの最小値} \\
-        p^{best\_contract} &: \; \text{交渉相手との合意価格の中で自分にとって最も良いもの} \\
-        p^{worst\_contract} &: \; \text{交渉相手との合意価格のなかで自分にとって最も悪いもの} \\
-        p^{opp\_offer}_{i,j} &: \; \text{i日目jステップ目の相手のoffer価格} \\
+        n^{contract}_{offer}&:\text{number of agreements by Gentle's offer}, \; n^{contract}_{accept}: \; \text{number of agreements by Gentle's accept} \\
+        p^{max}&:\text{maximum unit price of the negotiation}, \; p^{min}:\text{minimum unit price of the negotiation} \\
+        p^{best\_contract} &: \; \text{the best unit price of the agreements with the opponent} \\
+        p^{worst\_contract} &: \; \text{the worst unit price of the agreements with the opponent} \\
+        p^{opp\_offer}_{i,j} &: \; \text{offer price of the opponent on day $i$, step $j$} \\
         p^{best\_selling}_{i} &= \max\left(p^{opp\_offer}_{i,0}, p^{opp\_offer}_{i,1}, \dots, p^{opp\_offer}_{i,j}\right) \\
         p^{best\_buying}_{i} &= \min\left(p^{opp\_offer}_{i,0}, p^{opp\_offer}_{i,1}, \dots, p^{opp\_offer}_{i,j}\right) \\    
     \end{split}
 \end{equation*}
 
-
 \subsection{\textrm{Offering Strategy}}
-Gentleは，いくつかの取引データをもとにofferの価格（$p^{offer}$）および取引量（$q^{offer}$）を決定する．
-その際，これらの記号 $\succeq, \prec$ を，価格に関してエージェントにとって良いか悪いかを表す大小関係として定義する．
-この時，売り手エージェントであれば $5\prec 10$は真であり，買い手エージェントであれば $5 \succeq 10$は真となる．
-式中の$s^{offer}$はofferに関するslack変数であり，この値が大きいほど強気なofferをする．
-また，閾値$\tau$は，与えられた価格が自分にとって悪いかどうかの判断基準を表す．
+Gentle determines the offer unit price $p^{offer}$ and the offer quantity $q^{offer}$ based on some trading information.
+The symbols $\prec$ and $\succeq$ are defined as the sign of inequalities that indicate whether the price is good or bad for Gentle.
+In the cases, 5 $\prec$ 10 is true for the seller agent, and 5 $\succeq$ 10 is also true for the buyer agent.
+$s^{offer}$ in the equation is a slack variable related to the offer, and the larger this value, the more bullish the offer.
+We set a threshold $\tau$ that is the criterion for determining whether a given price is bad for Gentle or not.
 \begin{equation*}
     \begin{split}
         % offer price
@@ -71,9 +72,9 @@ Gentleは，いくつかの取引データをもとにofferの価格（$p^{offer
 
 
 \subsection{\textrm{Acceptance Strategy}}
-Gentleは，いくつかの取引データをもとに受け入れるunit price（$p^{accept}$）を決定する．取引量については考慮しない．
-式中の$s^{accept}$は，acceptに関するslack変数であり，この値が大きいほど譲歩して受諾する．
-また，変数$r$は相手の譲歩率の変化の割合を表す．
+Gentle determines the acceptable unit price $p^{offer}$ based on some trading information. The quantity is not taken into account.
+$s^{accept}$ in the equation is a slack variable related to acceptance, and the larger this value, the more concessional acceptance.
+We set a variable $r$ that is the ratio of the change in the opponent's concession rate.
 \begin{equation*}
     \begin{split}
         % accept price
@@ -95,13 +96,13 @@ Gentleは，いくつかの取引データをもとに受け入れるunit price�
 \end{equation*}
 
 \section{\textrm{Risk Management}}
-全く合意できないというリスクを対処するため，GentleはSelf factor（$S$）をもとに譲歩したOfferを行う．具体的には，次のような条件下で譲歩する．
-ここで，$t^{sim}$ は simulation time を表す．
+To deal with the risk of not being able to agree at all, Gentle makes concessional offers based on the Self factor $S$.
+Specifically, it makes concessions under the following conditions. Now, we set $t^sim$ that represents the simulation time.
 \begin{enumerate}[\hspace{20mm}1\textrm{:}]
     \item \hspace{10mm} if $t^{sim}>0.3$ and $S<0.5$:
     \item \hspace{10mm} \qquad $s^{offer} = s^{offer} - 1$
 \end{enumerate}
-Self factorは，自身の交渉の進捗を表す指標であり，次のように求められる．
+Self factor represents the progress of Gentle's own negotiation, and is caluculated as follows.
 \begin{equation*}
     \begin{split}
         S &= \dfrac{2}{3}AR + \dfrac{1}{3}AP \\
@@ -117,9 +118,7 @@ Self factorは，自身の交渉の進捗を表す指標であり，次のよう
 \end{equation*}
 \begin{equation*}
     \begin{split}
-        % AR &: \text{交渉開始から現在までの交渉成功割合} \\
-        % AP &: \text{合意価格が良いかどうか} \\
-        p^{prev\_contract} &: \text{直近の合意価格} \\
+        p^{prev\_contract} &: \text{most recently agreement price} \\
         TP &: \text{trading price} \\
     \end{split}
 \end{equation*}
